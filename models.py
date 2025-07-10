@@ -19,7 +19,7 @@ def dummy_llm_service(user_message):
 
 
 class LLMService:
-    def __init__(self):
+    def __init__(self, sys_promtp):
         try:
             # Создаем клиент с вашим токеном
             self.client = openai.OpenAI(
@@ -27,7 +27,7 @@ class LLMService:
                 base_url="https://llm.api.cloud.yandex.net/v1",
             )
             # Формируем системный промпт
-            self.sys_prompt = "Ты оператор техподдержки, отвечай вежливо"
+            self.sys_prompt = sys_promtp
             # Указываем путь к модели, 
             # Здесь нужно будет указать идентификатор своего аккаунта 
             self.model = "gpt://b1g8i6bj34avp7kulp7h/yandexgpt-lite"
