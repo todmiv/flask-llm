@@ -22,8 +22,10 @@
     cd flask-llm
     ```
 
-2. Установите зависимости:
+2. Создайте виртуальное окружение и установите зависимости:
     ```
+    python -m venv venv
+    venv/Scripts/Activate
     pip install -r requirements.txt
     ```
 
