@@ -29,6 +29,8 @@
     pip install -r requirements.txt
     ```
 
+Или в VsCode установите расширение python и создайте venv через графический интерфейс. 
+
 3. Получите ключ API по инструкции:  
 
 https://yandex.cloud/ru/docs/foundation-models/operations/get-api-key 
