@@ -30,7 +30,7 @@ class LLMService:
             self.sys_prompt = sys_prompt
             # Указываем путь к модели, 
             # Здесь нужно будет указать идентификатор своего аккаунта 
-            self.model = "gpt://b1g8i6bj34avp7kulp7h/yandexgpt-lite"
+            self.model = f"gpt://{env["YA_FOLDER_ID"]}/yandexgpt-lite"
 
         except Exception as e:
             print(f"Произошла ошибка: {str(e)}")
