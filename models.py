@@ -29,7 +29,7 @@ class LLMService:
             # Формируем системный промпт
             self.sys_prompt = sys_prompt
             # Указываем путь к модели, 
-            # Здесь нужно будет указать идентификатор своего аккаунта 
+            # Здесь используется идентификатор каталога вашего аккаунта 
             self.model = f"gpt://{env["YA_FOLDER_ID"]}/yandexgpt-lite"
 
         except Exception as e:
