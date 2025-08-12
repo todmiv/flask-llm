@@ -1,9 +1,22 @@
 from flask_sqlalchemy import SQLAlchemy
 import openai
 import dotenv
+import logging
+
+# Настройка логгирования
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 # Загружаем переменные окружения из файла .env
-env = dotenv.dotenv_values(".env")
+try:
+    env = dotenv.dotenv_values(".env")
+    YA_API_KEY = env["YA_API_KEY"]
+    YA_FOLDER_ID = env["YA_FOLDER_ID"]
+except FileNotFoundError:
+    raise FileNotFoundError("Файл .env не найден. Убедитесь, что он существует в корневой директории проекта.")
+except KeyError as e:
+    raise KeyError(f"Переменная окружения {str(e)} не найдена в файле .env. Проверьте его содержимое.")
+
 
 # Инициализируем SQLAlchemy для работы с базой данных через Flask
 db = SQLAlchemy()
@@ -25,48 +38,37 @@ class ChatHistory(db.Model):
     timestamp = db.Column(db.DateTime, server_default=db.func.now())  # Временная метка создания записи
 
 
-def dummy_llm_service(user_message):
-    """
-    Заглушка для сервиса LLM.
-
-    Аргументы:
-        user_message (str): Сообщение пользователя.
-
-    Возвращает:
-        str: Стандартный ответ, имитирующий работу LLM.
-    """
-    return f"Вы сказали: {user_message}, но я пока не могу ответить на это."
-
-
 class LLMService:
     """
     Класс для взаимодействия с внешней языковой моделью (например, YandexGPT).
 
     Атрибуты:
         sys_prompt (str): Системный промпт для LLM.
-        client: Клиент OpenAI для обращения к API.
+        client: Клиент OpenAI для обращения к API Yandex.
         model (str): Идентификатор используемой LLM модели.
     """
-    def __init__(self, sys_prompt):
+    def __init__(self, prompt_file):
         """
         Инициализация сервиса LLM.
 
         Аргументы:
-            sys_prompt (str): Системный промпт для LLM.
+            prompt_file (str): Путь к файлу с системным промптом для LLM.
         """
+        # Читаем системный промпт из файла и сохраняем в атрибут sys_prompt
+        with open(prompt_file, encoding='utf-8') as f:
+            self.sys_prompt = f.read()
+                
         try:
-            # Создаём клиента OpenAI с вашим API-ключом и базовым URL
+            # Создаём клиента OpenAI с вашим API-ключом и базовым URL для Yandex LLM API
             self.client = openai.OpenAI(
-                api_key=env["YA_API_KEY"],
+                api_key=YA_API_KEY,
                 base_url="https://llm.api.cloud.yandex.net/v1",
             )
-            # Сохраняем системный промпт
-            self.sys_prompt = sys_prompt
             # Формируем путь к модели с использованием идентификатора каталога из .env
-            self.model = f"gpt://{env['YA_FOLDER_ID']}/yandexgpt-lite"
+            self.model = f"gpt://{YA_FOLDER_ID}/yandexgpt-lite"
 
         except Exception as e:
-            print(f"Произошла ошибка: {str(e)}")
+            logger.error(f"Ошибка при авторизации модели. Проверьте настройки аккаунта и область действия ключа API. {str(e)}")
 
     def chat(self, message):
         """
@@ -95,4 +97,22 @@ class LLMService:
 
         except Exception as e:
             # В случае ошибки возвращаем её описание
+            logger.error(f"Произошла ошибка: {str(e)}")
             return f"Произошла ошибка: {str(e)}"
+
+
+llm_1 = LLMService('prompts/prompt_1.txt')
+
+
+def chat_with_llm(user_message):
+    """
+    Чат с использованием сервиса LLM.
+
+    Аргументы:
+        user_message (str): Сообщение пользователя.
+
+    Возвращает:
+        str: Ответ LLM.
+    """
+    response = llm_1.chat(user_message)
+    return response
