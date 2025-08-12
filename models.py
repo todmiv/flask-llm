@@ -25,19 +25,6 @@ class ChatHistory(db.Model):
     timestamp = db.Column(db.DateTime, server_default=db.func.now())  # Временная метка создания записи
 
 
-def dummy_llm_service(user_message):
-    """
-    Заглушка для сервиса LLM.
-
-    Аргументы:
-        user_message (str): Сообщение пользователя.
-
-    Возвращает:
-        str: Стандартный ответ, имитирующий работу LLM.
-    """
-    return f"Вы сказали: {user_message}, но я пока не могу ответить на это."
-
-
 class LLMService:
     """
     Класс для взаимодействия с внешней языковой моделью (например, YandexGPT).

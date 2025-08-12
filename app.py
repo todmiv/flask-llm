@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-from models import db, ChatHistory, dummy_llm_service, chat_with_llm
+from models import db, ChatHistory, chat_with_llm
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///site.db"
@@ -16,7 +16,6 @@ def chat():
     data = request.get_json()
     user_message = data.get("message", "")
 
-    # llm_reply = dummy_llm_service(user_message)
     llm_reply = chat_with_llm(user_message)
     # Save to chat history
     new_entry = ChatHistory(user_message=user_message, llm_reply=llm_reply)
