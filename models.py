@@ -1,22 +1,10 @@
 from flask_sqlalchemy import SQLAlchemy
 import openai
-import dotenv
 import logging
 
 # Настройка логгирования
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-
-# Загружаем переменные окружения из файла .env
-try:
-    env = dotenv.dotenv_values(".env")
-    YA_API_KEY = env["YA_API_KEY"]
-    YA_FOLDER_ID = env["YA_FOLDER_ID"]
-except FileNotFoundError:
-    raise FileNotFoundError("Файл .env не найден. Убедитесь, что он существует в корневой директории проекта.")
-except KeyError as e:
-    raise KeyError(f"Переменная окружения {str(e)} не найдена в файле .env. Проверьте его содержимое.")
-
 
 # Инициализируем SQLAlchemy для работы с базой данных через Flask
 db = SQLAlchemy()
@@ -40,11 +28,11 @@ class ChatHistory(db.Model):
 
 class LLMService:
     """
-    Класс для взаимодействия с внешней языковой моделью (например, YandexGPT).
+    Класс для взаимодействия с языковой моделью (локальной через Ollama).
 
     Атрибуты:
         sys_prompt (str): Системный промпт для LLM.
-        client: Клиент OpenAI для обращения к API Yandex.
+        client: Клиент OpenAI для обращения к локальному API Ollama.
         model (str): Идентификатор используемой LLM модели.
     """
     def __init__(self, prompt_file):
@@ -57,18 +45,13 @@ class LLMService:
         # Читаем системный промпт из файла и сохраняем в атрибут sys_prompt
         with open(prompt_file, encoding='utf-8') as f:
             self.sys_prompt = f.read()
-                
-        try:
-            # Создаём клиента OpenAI с вашим API-ключом и базовым URL для Yandex LLM API
-            self.client = openai.OpenAI(
-                api_key=YA_API_KEY,
-                base_url="https://llm.api.cloud.yandex.net/v1",
-            )
-            # Формируем путь к модели с использованием идентификатора каталога из .env
-            self.model = f"gpt://{YA_FOLDER_ID}/yandexgpt-lite"
 
-        except Exception as e:
-            logger.error(f"Ошибка при авторизации модели. Проверьте настройки аккаунта и область действия ключа API. {str(e)}")
+        # Настройка для локальной модели Ollama
+        self.client = openai.OpenAI(
+            api_key="ollama",
+            base_url="http://localhost:11434/v1",
+        )
+        self.model = "gemma3:4b"
 
     def chat(self, message):
         """
